@@ -1,0 +1,10 @@
+{
+  "openai": {
+    "secret_key": "sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+  },
+  "wechat": {
+    "general_chat_message": {
+      "history_size": 20
+    },
+  }
+}
