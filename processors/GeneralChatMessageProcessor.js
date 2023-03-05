@@ -44,7 +44,7 @@ export default class GeneralChatMessageProcessor {
     async reset(message) {
         await this.history.clear();
         await message.room().say(
-            `我已经忘记了我们之前的对话。现在可以重新开始向我提问了。\n<${message.talker().name()}> 已经重置会话历史。`,
+            `已经重置会话历史。我已经忘记了我们之前的对话。现在可以重新开始向我提问了。`,
             message.talker());
         return true;
     }

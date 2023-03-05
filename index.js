@@ -48,7 +48,11 @@ wechaty
                     openai, db.data.wechat.general_chat_message.history_size);
                 console.log(`New room: ${message.room().id}`);
             }
-            await processors[message.room().id].process(message, bot_user_name);
+            if ("!!!RESET!!!" in message.text()) {
+                await processors[message.room().id].reset(message);
+            } else {
+                await processors[message.room().id].process(message, bot_user_name);
+            }
         }
     });
 
