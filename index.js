@@ -40,17 +40,6 @@ wechaty
         bot_user_name = null;
     })
     .on('message', async (message) => {
-        console.log(`From: ${message.talker()}`);
-        console.log(`To: ${message.listener()}`);
-        console.log(`Room: ${message.room()}`);
-        console.log(`Text: ${message.text()}`);
-        console.log(`Type: ${message.type()}`);
-        console.log(`Self: ${message.self()}`);
-        console.log(`Mention: ${await message.mentionList()}`);
-        console.log(`MentionSelf: ${await message.mentionSelf()}`);
-        console.log(`Age: ${message.age()}`);
-        console.log(`Date: ${message.date()}`);
-        console.log("----------------------------------------");
         if (!message.self() && message.room()
             && (await message.mentionSelf() ||
                 (bot_user_name && (message.text() + " ").includes("@" + bot_user_name)))) {
