@@ -43,7 +43,7 @@ wechaty
         if (!message.self() && message.room()
             && (await message.mentionSelf() ||
                 (bot_user_name && (message.text() + " ").includes("@" + bot_user_name)))) {
-            await processor.process(message);
+            await processor.process(message, bot_user_name);
         }
     });
 
