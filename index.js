@@ -21,7 +21,7 @@ const openai = new OpenAIApi(new Configuration({
 }));
 
 // Processor initialization
-const processor = new GeneralChatMessageProcessor(openai, db.data.wechat.general_chat_message.history_size);
+const processors = {};
 
 // Wechaty initialization
 const wechaty = WechatyBuilder.build();
@@ -43,7 +43,12 @@ wechaty
         if (!message.self() && message.room()
             && (await message.mentionSelf() ||
                 (bot_user_name && (message.text() + " ").includes("@" + bot_user_name)))) {
-            await processor.process(message, bot_user_name);
+            if (!(message.room().id in processors)) {
+                processors[message.room().id] = new GeneralChatMessageProcessor(
+                    openai, db.data.wechat.general_chat_message.history_size);
+                console.log(`New room: ${message.room().id}`);
+            }
+            await processors[message.room().id].process(message, bot_user_name);
         }
     });
 
