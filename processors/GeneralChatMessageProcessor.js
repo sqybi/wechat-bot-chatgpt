@@ -6,7 +6,7 @@ export default class GeneralChatMessageProcessor {
         this.history_size = history_size;
         this.history = new FixedSizeQueue(history_size);
         this.default_system_prompt = system_prompt;
-        this.system_queries = [system_prompt];
+        this.system_queries = [{ "role": "system", "content": system_prompt }];
     }
 
     format_exc(error) {
@@ -42,15 +42,15 @@ export default class GeneralChatMessageProcessor {
 
     async system(message, reset, bot_user_name) {
         if (reset) {
-            this.system_queries = [this.default_system_prompt];
+            this.system_queries = [{ "role": "system", "content": this.default_system_prompt }];
             await message.room().say(this.build_bot_reply(
                 message.talker().name(), text,
                 `已经重置系统提示。现在的系统提示为：\n${this.system_queries[0].content}`), message.talker());
         } else {
-            this.system_queries = [
-                bot_user_name
-                    ? message.text().replaceAll("!!!SYSTEM!!!", "").replaceAll(`@${bot_user_name}`, "").trim()
-                    : message.text().replaceAll("!!!SYSTEM!!!", "").trim()];
+            const system_prompt = bot_user_name
+                ? message.text().replaceAll("!!!SYSTEM!!!", "").replaceAll(`@${bot_user_name}`, "").trim()
+                : message.text().replaceAll("!!!SYSTEM!!!", "").trim();
+            this.system_queries = [{ "role": "system", "content": system_prompt }];
             await message.room().say(this.build_bot_reply(
                 message.talker().name(), text,
                 `已经成功设置系统提示。现在的系统提示为：\n${this.system_queries[0].content}`), message.talker());
