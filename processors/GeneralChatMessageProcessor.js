@@ -57,6 +57,7 @@ export default class GeneralChatMessageProcessor {
     }
 
     async reset(message) {
+        const text = message.text().trim(); // not used yet -- filter bot_user_name if necessary later.
         await this.history.clear();
         await message.room().say(this.build_bot_reply(
             message.talker().name(), text,
