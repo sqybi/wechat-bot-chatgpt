@@ -1,13 +1,12 @@
 import FixedSizeQueue from '../utils/FixedSizeQueue.js';
 
 export default class GeneralChatMessageProcessor {
-    constructor(openai, history_size) {
+    constructor(openai, history_size, system_prompt) {
         this.openai = openai;
         this.history_size = history_size;
         this.history = new FixedSizeQueue(history_size);
-        this.system_queries = [
-            { "role": "system", "content": "你是一个名字叫做Mai的群聊机器人，你的用途是和群友们聊天。" }
-        ];
+        this.default_system_prompt = system_prompt;
+        this.system_queries = [system_prompt];
     }
 
     format_exc(error) {
@@ -41,11 +40,28 @@ export default class GeneralChatMessageProcessor {
         return false;
     }
 
+    async system(message, reset) {
+        if (reset) {
+            this.system_queries = [this.default_system_prompt];
+            await message.room().say(this.build_bot_reply(
+                message.talker().name(), text,
+                `已经重置系统提示。现在的系统提示为：\n${this.system_queries[0].content}`), message.talker());
+        } else {
+            this.system_queries = [
+                bot_user_name
+                    ? message.text().replaceAll("!!!SYSTEM!!!", "").replaceAll(`@${bot_user_name}`, "").trim()
+                    : message.text().replaceAll("!!!SYSTEM!!!", "").trim()];
+            await message.room().say(this.build_bot_reply(
+                message.talker().name(), text,
+                `已经成功设置系统提示。现在的系统提示为：\n${this.system_queries[0].content}`), message.talker());
+        }
+    }
+
     async reset(message) {
         await this.history.clear();
-        await message.room().say(
-            `已经重置会话历史。我已经忘记了我们之前的对话。现在可以重新开始向我提问了。`,
-            message.talker());
+        await message.room().say(this.build_bot_reply(
+            message.talker().name(), text,
+            "已经重置会话历史。我已经忘记了我们之前的对话。现在可以重新开始向我提问了。"), message.talker());
         return true;
     }
 }

@@ -36,7 +36,7 @@ wechaty
         bot_user_name = user.name();
         console.log(`User ${user} logged in`);
     })
-    .on('logout', (user) => {
+    .on('logout', () => {
         bot_user_name = null;
     })
     .on('message', async (message) => {
@@ -45,11 +45,17 @@ wechaty
                 (bot_user_name && (message.text() + " ").includes("@" + bot_user_name)))) {
             if (!(message.room().id in processors)) {
                 processors[message.room().id] = new GeneralChatMessageProcessor(
-                    openai, db.data.wechat.general_chat_message.history_size);
+                    openai,
+                    db.data.wechat.general_chat_message.history_size,
+                    db.data.wechat.general_chat_message.default_system_prompt);
                 console.log(`New room: ${message.room().id}`);
             }
             if (message.text().includes("!!!RESET!!!")) {
                 await processors[message.room().id].reset(message);
+            } else if (message.text().includes("!!!SYSTEM!!!")) {
+                await processors[message.room().id].system(message, false);
+            } else if (message.text().includes("!!!SYSTEMRESET!!!")) {
+                await processors[message.room().id].system(message, true);
             } else {
                 await processors[message.room().id].process(message, bot_user_name);
             }
