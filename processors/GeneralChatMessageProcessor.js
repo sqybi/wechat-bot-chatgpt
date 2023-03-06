@@ -44,13 +44,13 @@ export default class GeneralChatMessageProcessor {
         const text = bot_user_name ? message.text().replaceAll(`@${bot_user_name}`, "").trim() : message.text().trim();
         if (reset) {
             this.system_queries = [{ "role": "system", "content": this.default_system_prompt }];
-            await message.room().say(this.build_bot_reply(
+            await message.room().say(await this.build_bot_reply(
                 message.talker().name(), text,
                 `已经重置系统提示。现在的系统提示为：\n${this.system_queries[0].content}`), message.talker());
         } else {
             const system_prompt = text.replaceAll("!!!SYSTEM!!!", "").trim();
             this.system_queries = [{ "role": "system", "content": system_prompt }];
-            await message.room().say(this.build_bot_reply(
+            await message.room().say(await this.build_bot_reply(
                 message.talker().name(), text,
                 `已经成功设置系统提示。现在的系统提示为：\n${this.system_queries[0].content}`), message.talker());
         }
