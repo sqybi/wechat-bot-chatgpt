@@ -40,7 +40,7 @@ export default class GeneralChatMessageProcessor {
         return false;
     }
 
-    async system(message, reset) {
+    async system(message, reset, bot_user_name) {
         if (reset) {
             this.system_queries = [this.default_system_prompt];
             await message.room().say(this.build_bot_reply(

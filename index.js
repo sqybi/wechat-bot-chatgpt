@@ -53,9 +53,9 @@ wechaty
             if (message.text().includes("!!!RESET!!!")) {
                 await processors[message.room().id].reset(message);
             } else if (message.text().includes("!!!SYSTEM!!!")) {
-                await processors[message.room().id].system(message, false);
+                await processors[message.room().id].system(message, false, bot_user_name);
             } else if (message.text().includes("!!!SYSTEMRESET!!!")) {
-                await processors[message.room().id].system(message, true);
+                await processors[message.room().id].system(message, true, bot_user_name);
             } else {
                 await processors[message.room().id].process(message, bot_user_name);
             }
