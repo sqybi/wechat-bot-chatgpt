@@ -105,3 +105,4 @@ dist
 
 # Secrets and configs
 database.json
+*.memory-card.json

@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url';
 import { Low } from 'lowdb';
 import { JSONFile } from 'lowdb/node';
 import { Configuration, OpenAIApi } from 'openai';
+import qrcode from 'qrcode-terminal';
 import { WechatyBuilder } from 'wechaty';
 
 import GeneralChatMessageProcessor from './processors/GeneralChatMessageProcessor.js';
@@ -24,13 +25,18 @@ const openai = new OpenAIApi(new Configuration({
 const processors = {};
 
 // Wechaty initialization
-const wechaty = WechatyBuilder.build();
+const wechaty = WechatyBuilder.build({
+    name: db.data.wechat.name,
+});
 let bot_user_name = null;
 
 // Wechaty listeners
 wechaty
-    .on('scan', (qrcode, status) => {
-        console.log(`Scan QR Code to login: ${status}\nhttps://wechaty.js.org/qrcode/${encodeURIComponent(qrcode)}`);
+    .on('scan', (url, status) => {
+        console.log();
+        qrcode.generate(url, { small: true });
+        console.log(`Scan QR Code to login: ${status}\nhttps://wechaty.js.org/qrcode/${encodeURIComponent(url)}`);
+        console.log();
     })
     .on('login', (user) => {
         bot_user_name = user.name();
@@ -38,6 +44,10 @@ wechaty
     })
     .on('logout', () => {
         bot_user_name = null;
+    })
+    .on('error', (error) => {
+        console.log('Error happened:');
+        console.log(error);
     })
     .on('message', async (message) => {
         if (!message.self() && message.room()
