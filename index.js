@@ -65,23 +65,25 @@ wechaty
     .on("error", (error) => {
         console.log("Error happened:");
         console.log(error);
-        smsClient.SendSms(
-            {
-                ...smsParams,
-                TemplateParamSet: [
-                    db.data.wechat.name + "机器人",
-                    error.toString().slice(0, 20) + "...",
-                ],
-            },
-            (err, response) => {
-                if (err) {
-                    console.log("SMS sending error:");
-                    console.log(err);
-                    return;
+        if (smsClient && !wechaty.logonoff()) {
+            smsClient.SendSms(
+                {
+                    ...smsParams,
+                    TemplateParamSet: [
+                        `${db.data.wechat.name}机器人`,
+                        `掉线 ${error.toString().slice(0, 20)}...`,
+                    ],
+                },
+                (err, response) => {
+                    if (err) {
+                        console.log("SMS sending error:");
+                        console.log(err);
+                        return;
+                    }
+                    console.log("SMS sent!");
                 }
-                console.log("SMS sent!");
-            }
-        );
+            );
+        }
     })
     .on("message", async (message) => {
         if (!message.self() && message.room()
