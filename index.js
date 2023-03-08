@@ -1,13 +1,14 @@
-import { join, dirname } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { join, dirname } from "node:path";
+import { fileURLToPath } from "node:url";
 
-import { Low } from 'lowdb';
-import { JSONFile } from 'lowdb/node';
-import { Configuration, OpenAIApi } from 'openai';
-import qrcode from 'qrcode-terminal';
-import { WechatyBuilder } from 'wechaty';
+import { Low } from "lowdb";
+import { JSONFile } from "lowdb/node";
+import { Configuration, OpenAIApi } from "openai";
+import qrcode from "qrcode-terminal";
+import tencentcloud from "tencentcloud-sdk-nodejs";
+import { WechatyBuilder } from "wechaty";
 
-import GeneralChatMessageProcessor from './processors/GeneralChatMessageProcessor.js';
+import GeneralChatMessageProcessor from "./processors/GeneralChatMessageProcessor.js";
 
 // LowDB database
 // Usage:
@@ -30,26 +31,59 @@ const wechaty = WechatyBuilder.build({
 });
 let bot_user_name = null;
 
+// Tencent SMS initialization
+const SmsClient = tencentcloud.sms.v20210111.Client;
+const smsClient = db.data.tencent_sms ? new SmsClient({
+    credential: {
+        secretId: db.data.tencent_sms.secret_id,
+        secretKey: db.data.tencent_sms.secret_key,
+    },
+    region: db.data.tencent_sms.region,
+}) : null;
+const smsParams = {
+    SmsSdkAppId: db.data.tencent_sms.sdk_app_id,
+    SignName: db.data.tencent_sms.sign_name,
+    TemplateId: db.data.tencent_sms.template_id,
+    PhoneNumberSet: db.data.tencent_sms.phone_number_set,
+}
+
 // Wechaty listeners
 wechaty
-    .on('scan', (url, status) => {
+    .on("scan", (url, status) => {
         console.log();
         qrcode.generate(url, { small: true });
         console.log(`Scan QR Code to login: ${status}\nhttps://wechaty.js.org/qrcode/${encodeURIComponent(url)}`);
         console.log();
     })
-    .on('login', (user) => {
+    .on("login", (user) => {
         bot_user_name = user.name();
         console.log(`User ${user} logged in`);
     })
-    .on('logout', () => {
+    .on("logout", () => {
         bot_user_name = null;
     })
-    .on('error', (error) => {
-        console.log('Error happened:');
+    .on("error", (error) => {
+        console.log("Error happened:");
         console.log(error);
+        smsClient.SendSms(
+            {
+                ...smsParams,
+                TemplateParamSet: [
+                    db.data.wechat.name + "机器人",
+                    error.toString().slice(0, 20) + "...",
+                ],
+            },
+            (err, response) => {
+                if (err) {
+                    console.log("SMS sending error:");
+                    console.log(err);
+                    return;
+                }
+                console.log("SMS sent!");
+            }
+        );
     })
-    .on('message', async (message) => {
+    .on("message", async (message) => {
         if (!message.self() && message.room()
             && (await message.mentionSelf() ||
                 (bot_user_name && (message.text() + " ").includes("@" + bot_user_name)))) {
